@@ -1,0 +1,127 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.3.5'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'jacoco'
+	id 'com.github.spotbugs' version '6.0.7'
+    id 'checkstyle'
+}
+
+group = 'com.jade'
+version = '0.0.1-SNAPSHOT'
+description = 'data visualization for educational facilities'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+	
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.boot:spring-boot-test-autoconfigure'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport 
+    reports {
+        junitXml.required = true
+        html.required = true
+    }
+}
+
+jacocoTestReport {
+    dependsOn test 
+    reports {
+        html.required = true
+        xml.required = true
+        csv.required = true
+    }
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                '**/models/Facility.class',
+                '**/models/FacilityCountView.class',
+                '**/models/FacilityMarkerView.class',
+                '**/services/FacilityService.class',
+                '**/EducationalFacilitiesApplication.class',
+            ])
+        }))
+    }
+}
+
+spotbugs {
+    toolVersion = '4.8.3'
+    ignoreFailures = false
+    showStackTraces = true
+}
+
+checkstyle {
+    toolVersion = '10.12.0'
+    configFile = file('checkstyle.xml')
+}
+
+
+task printJacocoSummary {
+    dependsOn jacocoTestReport
+    doLast {
+        def csvFile = file("${buildDir}/reports/jacoco/test/jacocoTestReport.csv")
+        if (csvFile.exists()) {
+            println "\n=== JaCoCo Coverage Summary ==="
+            
+            def totalInstructionMissed = 0
+            def totalInstructionCovered = 0
+            def totalBranchMissed = 0
+            def totalBranchCovered = 0
+            def totalLineMissed = 0
+            def totalLineCovered = 0
+            def rowCount = 0
+            
+            csvFile.eachLine { line, count ->
+                if (count > 1) { 
+                    def parts = line.split(',')
+                    if (parts.size() >= 11) {
+                        rowCount++
+                        
+                        totalInstructionMissed += parts[3]?.toInteger() ?: 0
+                        totalInstructionCovered += parts[4]?.toInteger() ?: 0
+                        totalBranchMissed += parts[5]?.toInteger() ?: 0
+                        totalBranchCovered += parts[6]?.toInteger() ?: 0
+                        totalLineMissed += parts[7]?.toInteger() ?: 0
+                        totalLineCovered += parts[8]?.toInteger() ?: 0
+                    }
+                }
+            }
+            
+            println "Processed $rowCount rows"
+            println "------------------------"
+            
+            def instructionTotal = totalInstructionMissed + totalInstructionCovered
+            def branchTotal = totalBranchMissed + totalBranchCovered
+            def lineTotal = totalLineMissed + totalLineCovered
+            
+            println "Overall Coverage:"
+            println "  Instructions: ${totalInstructionCovered}/${instructionTotal} (${instructionTotal > 0 ? Math.round(totalInstructionCovered * 100 / instructionTotal) : 0}%)"
+            println "  Branches: ${totalBranchCovered}/${branchTotal} (${branchTotal > 0 ? Math.round(totalBranchCovered * 100 / branchTotal) : 0}%)"
+            println "  Lines: ${totalLineCovered}/${lineTotal} (${lineTotal > 0 ? Math.round(totalLineCovered * 100 / lineTotal) : 0}%)"
+            
+            println "===============================\n"
+        } else {
+            println "JaCoCo CSV report not found at ${csvFile}"
+        }
+    }
+}

@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    environment:
+      - DB_ADDRESS=jdbc:mysql://database:3306
+      - DB_DATABASE=jade_db
+      - DB_USER=root
+      - DB_PASSWORD=pwd
+    networks:
+      - backend-database
+      - backend-frontend
+
+  database:
+    image: mariadb:10
+    environment:
+      - MYSQL_ROOT_PASSWORD=pwd
+      - MYSQL_DATABASE=jade_db
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./database:/docker-entrypoint-initdb.d
+    networks:
+      - backend-database
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - BACKEND_PROXY=http://backend:8080
+    networks:
+      - backend-frontend
+  
+  python:
+    build: ./python
+    ports:
+      - "5000:5000"
+    networks:
+      - backend-database
+    environment:
+      - DB_USER=root
+      - DB_PASSWORD=pwd
+      - DB_HOST=database
+      - DB_NAME=jade_db
+    volumes:
+      - ./database:/output
+
+volumes:
+  mariadb_data:
+
+networks:
+  backend-database:
+  backend-frontend:

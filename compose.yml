@@ -1,0 +1,50 @@
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  backend:
+    build: ./backend
+    ports:
+      - "8080:8080"
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mariadb://database:3306/jade_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: rootpassword
+    depends_on:
+      database:
+        condition: service_healthy
+      importer:
+        condition: service_completed_successfully
+
+  database:
+    image: mariadb:10
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: jade_db
+    volumes:
+      - ./database:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-uroot", "-prootpassword"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  importer:
+    build: ./python
+    command: python import_csv.py
+    environment:
+      DB_USER: root
+      DB_PASSWORD: rootpassword
+      DB_HOST: database
+      DB_NAME: jade_db
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: "on-failure"
