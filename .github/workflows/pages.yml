@@ -30,6 +30,7 @@ jobs:
       - run: npm ci --legacy-peer-deps
       - run: npm run build
         env:
+          CI: false
           PUBLIC_URL: https://workflow-223.github.io/educational-facilities-landscape
       - uses: actions/upload-pages-artifact@v3
         with:
