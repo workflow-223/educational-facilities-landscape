@@ -9,6 +9,10 @@ Data visualization platform mapping educational facilities across Canada with Le
 - **Python Service**: Flask-based data importer
 - **Database**: MariaDB
 
+## Live Demo
+
+Frontend (UI only, no backend): https://workflow-223.github.io/educational-facilities-landscape/
+
 ## CI/CD
 
 This project uses GitHub Actions for continuous integration:
