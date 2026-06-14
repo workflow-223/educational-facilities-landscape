@@ -49,6 +49,7 @@ jobs:
         with:
           java-version: 17
           distribution: 'temurin'
+      - run: chmod +x gradlew
       - run: ./gradlew checkstyleMain spotbugsMain
 
   test-backend:
@@ -63,4 +64,5 @@ jobs:
         with:
           java-version: 17
           distribution: 'temurin'
+      - run: chmod +x gradlew
       - run: ./gradlew --no-daemon clean test jacocoTestReport
