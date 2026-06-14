@@ -1,20 +1,28 @@
-## Deploy
+# JadeEd Explorer
 
-Ensure feature/0-deployment branch is up-to-date with main:
+Data visualization platform mapping educational facilities across Canada with Leaflet maps, Recharts analytics, and multi-service Docker orchestration.
 
-1. git checkout feature/0-deployment
-2. git pull origin feature/0-deployment
-3. git merge main
-4. git push origin feature/0-deployment
+## Architecture
 
-To deploy:
+- **Frontend**: React + TypeScript + Leaflet + Recharts
+- **Backend**: Java Spring Boot 3.3.5 REST API
+- **Python Service**: Flask-based data importer
+- **Database**: MariaDB
 
-1. Make sure your school VPN is running
-2. ssh socs@jade.socs.uoguelph.ca
-3. Enter password (check Discord #sprint-1 pinned messages)
-4. cd JadeEd
-5. git checkout feature/0-deployment
-6. git pull origin feature/0-deployment
-7. sudo docker compose -f compose.deploy.yml down -v
-8. sudo docker compose -f compose.deploy.yml up --build -d
-9. Go to https://cis3760.socs.uoguelph.ca/jade to verify
+## CI/CD
+
+This project uses GitHub Actions for continuous integration:
+- Frontend linting and testing
+- Backend linting (Checkstyle, SpotBugs) and testing (JaCoCo coverage)
+
+## Local Setup
+
+```bash
+docker compose up --build
+```
+
+## Deployment
+
+```bash
+docker compose -f compose.deploy.yml up --build -d
+```
