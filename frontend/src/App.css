@@ -1,5 +1,5 @@
 .app-shell {
-  min-height: 100vh;
+  min-height: 100dvh;
   background-color: #f8fafc;
   display: flex;
   flex-direction: column;
@@ -11,7 +11,8 @@
 }
 
 .map-section {
-  height: 100vh;
+  height: 100dvh;
+  min-height: 300px;
 }
 
 .map-section > div {
@@ -30,4 +31,15 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+@media (max-width: 768px) {
+  .chart-section { padding: 12px; }
+  .map-section { height: 60dvh; min-height: 250px; }
+}
+
+@media (max-width: 480px) {
+  .chart-section { padding: 8px; }
+  .map-section { height: 50dvh; min-height: 200px; }
+  .app-shell { font-size: 14px; }
 }
